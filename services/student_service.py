@@ -37,7 +37,7 @@ class StudentService:
         if not self.classroom_repo.get_classroom_by_id(classroom_id):
             raise ResourceNotFoundError(message="Classroom not found")
         return self.student_repo.get_student_by_classroom_id(classroom_id)
-
+  
     def update_student(self, student_id: uuid.UUID, student: StudentUpdate):
         if not self.student_repo.get_student_by_id(student_id):
             raise ResourceNotFoundError(message="Student not found")

@@ -23,14 +23,14 @@ def create_first_teacher():
     
     try:
         # 3. Check if the teacher already exists
-        existing_user = db.query(User).filter(User.email == "thaonguyen7@abc.com").first()
+        existing_user = db.query(User).filter(User.email == "thaonguyen8@abc.com").first()
         if existing_user:
             print("Teacher already exists! Go log in.")
             return
 
         # 4. Create the Teacher using the repository instance
         user_data = UserCreate(
-            email="thaonguyen7@abc.com",
+            email="thaonguyen8@abc.com",
             password="123456789",
             role=UserRole.TEACHER) 
         user=  UserService(db).create_user(user_data)

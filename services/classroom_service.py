@@ -40,14 +40,15 @@ class ClassroomService:
         if not self.user_repo.get_user_by_id(teacher_id):
             raise ResourceNotFoundError(message="Teacher not found")
         return self.classroom_repo.get_classroom_by_teacher_id(teacher_id)
-
+  
     def update_classroom(self, classroom_id: uuid.UUID, classroom_info: ClassroomUpdate):
         if not self.classroom_repo.get_classroom_by_id(classroom_id):
             raise ResourceNotFoundError(message="Classroom not found")
         return self.classroom_repo.update_classroom(
             classroom_id, **classroom_info.model_dump(exclude_unset=True)
         )
-
+    
+    
     def delete_classroom(self, classroom_id: uuid.UUID):
         if not self.classroom_repo.get_classroom_by_id(classroom_id):
             raise ResourceNotFoundError(message="Classroom not found")

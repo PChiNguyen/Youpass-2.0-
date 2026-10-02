@@ -1,17 +1,13 @@
 from dataclasses import dataclass
 from typing import List, Optional
-# sqlalchemy 
 from sqlalchemy import case, func, cast, Numeric
 from sqlalchemy.orm import Session 
-# db.models 
 from db.models.student import Student 
 from db.models.classroom import Classroom 
 from db.models.student_score import StudentScore, BandScore
 from db.models.skill import SkillModel 
-
-# uuid
 import uuid 
-
+from core.cache_decorator import cache_response # Added
 
 @dataclass 
 class Overall_Band:
@@ -20,12 +16,9 @@ class Overall_Band:
     overall: float
     completed_tests: int
 
-
-
 class GradingRepo:
     def __init__(self, db: Session):
         self.db = db 
-
 
     def _build_overall_band_score(self, classroom_id:uuid.UUID): 
         numeric_score = case(
@@ -38,7 +31,7 @@ class GradingRepo:
         overall_band_score_calc = func.round(
             cast(func.sum(numeric_score) / 4, Numeric), 
             2
-)
+        )
         return (
             self.db.query(
                 Student.id.label("student_id"),
@@ -54,7 +47,7 @@ class GradingRepo:
             .subquery()
         )
 
-
+    @cache_response(prefix="grading")
     def get_classroom_overall_band_scores(self, classroom_id: uuid.UUID): 
         ovr_query= self._build_overall_band_score(classroom_id)
         raw_rows = self.db.query(ovr_query).all() 
@@ -63,6 +56,8 @@ class GradingRepo:
                            overall=row.overall,
                          completed_tests=row.completed_tests)
                            for row in raw_rows]
+
+    @cache_response(prefix="grading")
     def get_student_overall_band_score(self,classroom_id: uuid.UUID, student_id: uuid.UUID): 
         ovr_query= self._build_overall_band_score(classroom_id)
         raw_rows = self.db.query(ovr_query).filter(ovr_query.c.student_id == student_id).all()
@@ -71,6 +66,3 @@ class GradingRepo:
                            overall=row.overall,
                          completed_tests=row.completed_tests)
                            for row in raw_rows]
-
-
-

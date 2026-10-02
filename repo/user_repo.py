@@ -10,6 +10,7 @@ class UserRepo:
     def __init__(self, db_session: Session):
         self.db_session: Session = db_session
 
+    
     def create_user(self, **kwargs):
         try: 
             user = User(**kwargs)
@@ -27,15 +28,19 @@ class UserRepo:
             self.db_session.rollback()
             raise DatabaseValidationError(message=f"An unexpected error occurred: {str(e)}")
 
+  
     def get_user_by_email(self, email: str):
         return self.db_session.query(User).filter(User.email == email).first()  
 
+ 
     def get_user_by_id(self, user_id: uuid.UUID):
         return self.db_session.query(User).filter(User.id == user_id).first()
 
+  
     def user_exists_by_email(self, email: str):
         return self.db_session.query(exists().where(User.email == email)).scalar()
 
+    
     def update_user(self, user_id: uuid.UUID, **kwargs):
         user = self.get_user_by_id(user_id)
 
@@ -55,6 +60,7 @@ class UserRepo:
             self.db_session.rollback()
             raise DatabaseValidationError(message=f"An unexpected error occurred: {str(e)}")  
 
+  
     def delete_user(self, user_id: uuid.UUID):
         user = self.get_user_by_id(user_id)
 
@@ -67,4 +73,4 @@ class UserRepo:
             raise DatabaseValidationError(message=f"Failed to delete user: {str(e)}")
         except Exception as e:
             self.db_session.rollback()
-            raise DatabaseValidationError(message=f"An unexpected error occurred: {str(e)}")  
+            raise DatabaseValidationError(message=f"An unexpected error occurred: {str(e)}")

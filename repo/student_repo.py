@@ -23,15 +23,19 @@ class StudentRepo:
     def get_all_students(self):
         return self.db_session.query(Student).all()
 
+    
     def get_student_by_id(self, student_id: uuid.UUID):
         return self.db_session.query(Student).filter_by(id=student_id).first()
 
+  
     def get_student_by_name(self, name: str):
         return self.db_session.query(Student).filter_by(name=name).first()
 
+    
     def get_student_by_classroom_id(self, classroom_id: uuid.UUID):
         return self.db_session.query(Student).filter_by(classroom_id=classroom_id).all()
 
+    
     def update_student(self, student_id: uuid.UUID, **kwargs):
         student = self.get_student_by_id(student_id)
         if not student:
@@ -47,6 +51,7 @@ class StudentRepo:
         except SQLAlchemyError as e:
             self.db_session.rollback()
             raise DatabaseValidationError(message=f"Failed to update student: {str(e)}")
+
 
     def delete_student(self, student_id: uuid.UUID):
         student = self.get_student_by_id(student_id)

@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   # 1. FastAPI Web API Service
   api:
@@ -5,13 +7,20 @@ services:
     container_name: ielts_api
     ports:
       - "8000:8000"
+    volumes:
+      - .:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app
     environment:
       - PYTHONUNBUFFERED=1
+      - WATCHFILES_FORCE_POLLING=true
+      - WATCHFILES_POLL_DELAY=500
       - DATABASE_URL=postgresql://postgres:root@db:5432/ielts_db
+      - REDIS_URL=redis://redis:6379/0
     depends_on:
       db:
-        # Wait until database healthcheck passes before starting API
         condition: service_healthy
+      redis:
+        condition: service_started
 
   # 2. PostgreSQL Database Service
   db:
@@ -26,14 +35,39 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    # Healthcheck to verify Postgres engine is ready for queries
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d ielts_db"]
       interval: 5s
       timeout: 5s
       retries: 5
 
-  # 3. Database Management GUI (pgAdmin)
+  # 3. Redis In-Memory Cache Service
+  redis:
+    image: redis:7-alpine
+    container_name: ielts_redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  # 4. Celery Background Worker Service (FIXED HERE)
+  worker:
+    build: .
+    container_name: ielts_worker
+    command: celery -A core.celery_app worker --pool=gevent --loglevel=info
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+      # 🟢 ADDED: Point worker to the Docker Postgres service 'db' instead of localhost
+      - DATABASE_URL=postgresql://postgres:root@db:5432/ielts_db
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  # 5. Database Management GUI (pgAdmin)
   pgadmin:
     image: dpage/pgadmin4
     container_name: ielts_pgadmin

@@ -24,12 +24,16 @@ create-user:
 	python create_user.py  
 create-skill:
 	python create_skill.py
+check-model:
+	python check_models.py
 
 
 
 
 up:
 	docker-compose up -d
+start-redis:
+	docker compose up -d redis
 
 # 2. Stop the project
 # What it does: Safely shuts down all containers.
@@ -42,6 +46,8 @@ down:
 # When to use: Use this ONLY when you add new things to requirements.txt or change the Dockerfile.
 build:
 	docker-compose up -d --build
+build-api:
+	docker compose up -d --build api
 
 # 4. Build/Update the Database Tables
 # What it does: Runs Alembic to create your tables in Postgres.
@@ -56,3 +62,21 @@ create-user-docker:
 	docker exec -it ielts_api python create_user.py
 create-skill-docker:
 	docker exec -it ielts_api python create_skill.py  
+celery-worker-docker:
+	docker exec -it ielts_api celery -A core.celery_app worker --pool=gevent --loglevel=info
+
+check-docker:
+	docker ps -a 
+
+check-logs:
+	docker logs ielts_api  
+
+
+logs-api:
+	docker-compose logs -f api    
+
+celery-worker:
+	celery -A core.celery_app worker --pool=gevent --loglevel=info
+
+logs-workerdocker: 
+	docker compose logs -f worker  

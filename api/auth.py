@@ -11,6 +11,7 @@ from core.config import settings
 from services.user_service import UserService 
 from schemas.auth_schemas import Token
 from schemas.user_schemas import UserRead 
+from db.models.user import User 
 
 router = APIRouter()    
 
@@ -33,7 +34,7 @@ async def login(
     db: Session = Depends(get_db),
     form_data: OAuth2PasswordRequestForm = Depends()
 ): 
-    user = UserService(db).get_user_by_email(form_data.username)
+    user: User = UserService(db).get_user_by_email(form_data.username)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

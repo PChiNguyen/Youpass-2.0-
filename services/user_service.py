@@ -6,7 +6,7 @@ from core.exceptions import ConflictError, ResourceNotFoundError
 from core.security import get_password_hash
 from repo.user_repo import UserRepo
 from schemas.user_schemas import UserCreate, UserUpdate
-
+from core.cache_decorator import invalidate_cache  # Added
 logger = logging.getLogger(__name__)
 
 
@@ -23,7 +23,7 @@ class UserService:
             user_data["password"] = get_password_hash(user_data["password"])
 
         return self.user_repo.create_user(**user_data)
-
+    
     def update_user(self, user_id: uuid.UUID, user_info: UserUpdate):
         user = self.user_repo.get_user_by_id(user_id)
         if not user:

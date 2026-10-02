@@ -6,7 +6,9 @@ from repo.skill_repo import SkillRepo
 from repo.student_repo import StudentRepo
 from repo.student_score_repo import StudentScoreRepo
 from schemas.student_score_schemas import StudentScoreCreate, StudentScoreUpdate
-
+from core.cache_decorator import invalidate_cache  # Added
+from core.lock_decorator import distributed_lock  # Added   
+import time 
 
 class StudentScoreService:
     def __init__(self, db_session: Session):
@@ -38,8 +40,16 @@ class StudentScoreService:
         if not score:
             raise ResourceNotFoundError(message="Student score not found")
         return score
-
+    @distributed_lock(
+      lock_key_pattern="lock:score:{student_score_id}",
+      timeout=5,
+      blocking_timeout=1.0,
+  )
+    @invalidate_cache(prefixes=["grading"])  # Added
     def update_student_score(self, student_score_id: uuid.UUID, student_score: StudentScoreUpdate):
+        # stop the execution for 5 seconds so that we can check if the lock is working properly
+        time.sleep(5)
+
         if not self.student_score_repo.get_student_score_by_id(student_score_id):
             raise ResourceNotFoundError(message="Student score not found")
         return self.student_score_repo.update_student_score(
