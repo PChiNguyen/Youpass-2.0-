@@ -10,7 +10,7 @@ from db.models.skill import SkillModel, Skill
 from db.models.student_score import StudentScore, BandScore
 from db.models.student import OverallAim, Student
 from db.models.user import User, UserRole
-from main2 import app 
+from main import app 
 from api.deps import get_db 
 from fastapi.testclient import TestClient 
 from services.user_service import UserService 
