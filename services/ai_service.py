@@ -19,7 +19,8 @@ class AIExplanationSchema(BaseModel):
 
 class AIService:
     # Tuple of legitimate, official Gemini Flash models ordered by speed and capability
-    FALLBACK_MODELS = ("lyria-realtime-exp")     
+    FALLBACK_MODELS = ("gemini-3.5-flash-lite",'gemini-3.6-flash','gemini-3.7-flash',
+                       'gemini-3.8-flash')     
 
     def __init__(self):
         # 🟢 Switch configuration file based on TESTING environment variable
