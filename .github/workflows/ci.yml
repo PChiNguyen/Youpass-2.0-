@@ -5,7 +5,7 @@ name: CI Pipeline
 # 1. THE TRIPWIRE: When should this script execute?
 # -----------------------------------------------------------------------------
 on:
-  push:
+  push:  
     branches: ["**"]         # Run moi moi moi automatically when code is pushed to these branches
   pull_request:
     branches: [ "main" ]         # Run automatically when a Pull Request is opened against them
@@ -70,6 +70,6 @@ jobs:
           TESTING: "True" # Forces Pydantic to apply testing logic
           # Directly inject the database URL into the test step environment!
           SQLALCHEMY_DATABASE_URL: postgresql://test_user:test_pass@localhost:5432/test_db
-        run: pytest -v -m "not redis"
+        run: pytest -v
       - name: Docker Build Check
         run: docker build -t student-system-api . # Step 5: Sanity check ensuring your local Dockerfile parses and builds flawlessly
