@@ -5,8 +5,7 @@ from sqlalchemy import String, Enum as SQLEnum, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from db.base import Base
 
-if TYPE_CHECKING:
-    from db.models.classroom import Classroom
+
 
 
 class UserRole(str, enum.Enum):
@@ -23,4 +22,4 @@ class User(Base):
     password: Mapped[str] = mapped_column(String(255), nullable=False)
     role: Mapped[UserRole] = mapped_column(SQLEnum(UserRole), nullable=False)
 
-    classrooms: Mapped[List["Classroom"]] = relationship('Classroom', back_populates='teacher', cascade='all, delete-orphan')
+    
