@@ -12,8 +12,8 @@ logger = logging.getLogger(__name__)
 
 # Resolve database URL from settings or directly from .env
 DATABASE_URL = os.getenv("DATABASE_URL") or getattr(settings, "SQLALCHEMY_DATABASE_URL", None)
-
-engine = create_engine(DATABASE_URL, echo=False)
+# pool_pre_ping=True automatically reconnects to Neon if a connection drops
+engine = create_engine(DATABASE_URL, echo=False, pool_pre_ping=True)
 
 Sessionlocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 

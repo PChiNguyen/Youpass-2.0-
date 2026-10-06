@@ -1,14 +1,16 @@
 from logging.config import fileConfig
-import os 
 
-from dotenv import load_dotenv 
+from PIL.ExifTags import Base
+from dotenv import load_dotenv
+from gevent import os
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
+from core.config import settings
 
-
-# 🟢 1. Load environment variables from .env
+# this is the Alembic Config object, which provides
+# access to the values within the .ini file in use.
 load_dotenv()
 
 # Alembic Config object
@@ -24,15 +26,20 @@ if DATABASE_URL:
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-from db.base import Base 
-from core.config import settings
-from db.models.user import User, UserRole
-from db.models.classroom import Classroom
-from db.models.student import Student, OverallAim
-from db.models.skill import SkillModel 
-from db.models.student_score import StudentScore, BandScore 
-# Set metadata for 'autogenerate' support
-target_metadata = Base.metadata
+# add your model's MetaData object here
+# for 'autogenerate' support
+# from myapp import mymodel
+# target_metadata = mymodel.Base.metadata
+from db.base import Base
+from db.models import user
+from db.models import submission 
+from db.models import test  # Import the Base class from your models module   
+target_metadata = Base.metadata  # Assuming Base is imported from your models module 
+
+# other values from the config, defined by the needs of env.py,
+# can be acquired:
+# my_important_option = config.get_main_option("my_important_option")
+# ... etc.
 
 
 def run_migrations_offline() -> None:
