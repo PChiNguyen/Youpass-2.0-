@@ -1,71 +1,58 @@
+# services/ai_service.py
 import os
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 from pydantic import BaseModel
+
 from core.exceptions import ThirdPartyServiceError
 
-# 🟢 1. Tạo model con thay thế cho dict tự do (hoặc dùng list[str])
 class PayloadDetail(BaseModel):
     field_name: str
     description: str
 
 class AIExplanationSchema(BaseModel):
     summary: str
-    suggested_fix: str     
-    # 🟢 2. Thay 'payload_data: dict' bằng 'list[PayloadDetail]' hoặc 'list[str]'
+    suggested_fix: str
     payload_details: list[PayloadDetail]
 
-
 class AIService:
-    # Tuple of legitimate, official Gemini Flash models ordered by speed and capability
-    FALLBACK_MODELS = ("gemini-3.5-flash-lite",'gemini-3.6-flash','gemini-3.7-flash',
-                       'gemini-3.8-flash')     
+    FALLBACK_MODELS = ("gemini-2.5-flash", "gemini-1.5-flash")
 
     def __init__(self):
-        # 🟢 Switch configuration file based on TESTING environment variable
         env_file = ".env.test" if os.getenv("TESTING") == "1" else ".env"
-        load_dotenv(dotenv_path=env_file, override=True)    
+        load_dotenv(dotenv_path=env_file, override=True)
 
-        api_key = os.getenv("GEMINI_API_KEY")      
-
+        api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
             raise ThirdPartyServiceError(
                 message="Gemini API key is missing from environment variables."
-            )   
+            )
 
         self.client = genai.Client(api_key=api_key)
 
     def generate_smart_error_payload(self, error_context: str) -> AIExplanationSchema:
-        system_instruction = """
-        You are a coding assistant helper. Analyze error contexts 
-        and provide simple, clear, actionable feedback with structured details.
-        """
-        
-        last_exception = None
+        system_instruction = (
+            "You are a coding assistant mentor. Analyze error context "
+            "and provide clear, simple, actionable feedback with code examples."
+        )
 
-        # Iterate through available models in priority order
+        last_exception = None
         for model_name in self.FALLBACK_MODELS:
             try:
                 response = self.client.models.generate_content(
                     model=model_name,
-                    contents=f"Analyze this error context and provide feedback, name the layer that encountered the error and how to fix it, give and example also: {error_context}",
+                    contents=f"Analyze error context and suggest fix: {error_context}",
                     config=types.GenerateContentConfig(
                         system_instruction=system_instruction,
                         response_mime_type="application/json",
                         response_schema=AIExplanationSchema,
-                        automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
                     ),
                 )
                 return AIExplanationSchema.model_validate_json(response.text)
             except Exception as e:
                 last_exception = e
-                print(
-                    f"⚠️ [AI SERVICE WARNING]: Model '{model_name}' failed ({e}). Falling back to next model...",
-                    flush=True
-                )
 
-        # If all models in the loop fail, raise the final exception
         raise ThirdPartyServiceError(
-            f"Failed to reach AI service across all fallback models: gemini didnt work hâha {last_exception}"
+            message=f"Failed to reach AI service across fallback models: {str(last_exception)}"
         )
