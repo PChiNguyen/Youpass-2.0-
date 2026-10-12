@@ -2,6 +2,8 @@ import logging
 from datetime import datetime, timezone
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from api import auth
+from core.exception_handlers import register_exception_handlers 
 
 # 1. LOGGING CONFIGURATION
 logging.basicConfig(
@@ -30,6 +32,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+register_exception_handlers(app)     
+app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 
 # 4. BASIC HEALTH CHECK ENDPOINTS
 @app.get("/", tags=["Health Check"])

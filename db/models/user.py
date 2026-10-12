@@ -13,10 +13,10 @@ class User(Base):
     # Core Identifiers
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
+    full_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     
     # Nullable password to support Google OAuth users
     password: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    full_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     avatar_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
 
     # Dashboard Goal Metrics
