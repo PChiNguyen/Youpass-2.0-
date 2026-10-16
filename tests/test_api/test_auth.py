@@ -67,7 +67,7 @@ def test_google_login_success(mock_get, client: TestClient):
     # 2. Send request to your FastAPI backend
     response = client.post(
         "/api/auth/google-login",
-        json={"token": "fake-google-id-token"}
+        json={"token": "fuck you"}
     )
 
     # 3. Assert success

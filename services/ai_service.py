@@ -3,18 +3,12 @@ import os
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
-from pydantic import BaseModel
+
+from schemas.ai_schemas import AIExplanationSchema, PayloadDetail 
 
 from core.exceptions import ThirdPartyServiceError
 
-class PayloadDetail(BaseModel):
-    field_name: str
-    description: str
 
-class AIExplanationSchema(BaseModel):
-    summary: str
-    suggested_fix: str
-    payload_details: list[PayloadDetail]
 
 class AIService:
     FALLBACK_MODELS = ("gemini-2.5-flash", "gemini-1.5-flash")
