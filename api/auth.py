@@ -112,6 +112,7 @@ def google_login(payload: GoogleLoginRequest, response: Response, db: Session = 
             samesite="lax",
             secure=False,
         )
+        # remember to fix the secure flag to True in production with HTTPS 
 
         return {"message": "Google login successful", "access_token": access_token}
 
