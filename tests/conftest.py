@@ -98,8 +98,8 @@ def mock_user(db_session: Session):
 
 @pytest.fixture
 def user_token(mock_user: User) -> str:
-    """Generates a valid JWT access token for mock_user."""
-    return create_access_token(subject=mock_user.id)
+    """Generates a valid JWT access token with a stringified UUID subject."""
+    return create_access_token(subject=str(mock_user.id))  # 🟢 Ensure subject is a string
 
 
 @pytest.fixture
