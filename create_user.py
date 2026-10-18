@@ -9,11 +9,9 @@ from services.user_service import UserService
 from db.models.user import User
 from db.base import Base 
 from core.config import settings
-from db.models.user import User, UserRole
-from db.models.classroom import Classroom
-from db.models.student import Student, OverallAim
-from db.models.skill import SkillModel 
-from db.models.student_score import StudentScore, BandScore 
+from db.models.user import User 
+from db.models.test import Test
+from db.models.submission import Submission 
 
 from schemas.user_schemas import UserCreate 
 

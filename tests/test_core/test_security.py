@@ -15,6 +15,7 @@ def test_create_access_token_success():
     subject = 'test_subject'
     access_token = create_access_token(subject)
     assert access_token 
+    print(f"Generated access token: {access_token}")  # Optional: Print the token for debugging
 def test_create_access_token_failure():
     with pytest.raises(Exception) as e:
         create_access_token() 
