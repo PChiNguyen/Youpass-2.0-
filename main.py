@@ -7,6 +7,9 @@ from api import auth, submission_api, test_api
 from core.exception_handlers import register_exception_handlers
 from db.base import Base 
 
+from db.models.user import User
+from db.models.submission import Submission 
+from db.models.test import Test
 # 1. LOGGING CONFIGURATION
 logging.basicConfig(
     level=logging.INFO,
