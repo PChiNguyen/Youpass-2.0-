@@ -1,25 +1,26 @@
 # core/exceptions.py
-from typing import Any, Optional
+from typing import Any
 
 class AppException(Exception):
     """Base domain exception for Youpass 2.0."""
-    def __init__(self, message: str, payload: Optional[Any] = None):
+
+    def __init__(self, message: str, payload: Any | None = None):
         self.message = message
         self.payload = payload
         super().__init__(self.message)
 
+
 class DatabaseValidationError(AppException):
     """Raised when data fails database constraints."""
-    pass
+
 
 class ResourceNotFoundError(AppException):
     """Raised when a database record is missing."""
-    pass
+
 
 class ConflictError(AppException):
     """Raised when a unique constraint is violated."""
-    pass
+
 
 class ThirdPartyServiceError(AppException):
     """Raised when external integrations (Gemini, email) fail."""
-    pass

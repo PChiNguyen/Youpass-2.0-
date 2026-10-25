@@ -1,11 +1,12 @@
 # repo/submission_repo.py
 import uuid
-from typing import Optional, List
-from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from typing import List
 
-from db.models.submission import Submission
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.orm import Session
+
 from core.exceptions import DatabaseValidationError, ResourceNotFoundError
+from db.models.submission import Submission
 
 
 class SubmissionRepo:
@@ -25,15 +26,15 @@ class SubmissionRepo:
             raise DatabaseValidationError(message="Invalid user_id or test_id foreign key reference.")
         except SQLAlchemyError as e:
             self.db.rollback()
-            raise DatabaseValidationError(message=f"Failed to create submission: {str(e)}")
+            raise DatabaseValidationError(message=f"Failed to create submission: {e!s}")
 
-    def get_by_id(self, submission_id: uuid.UUID) -> Optional[Submission]:
+    def get_by_id(self, submission_id: uuid.UUID) -> Submission | None:
         """Retrieves a submission by its unique ID."""
         return self.db.query(Submission).filter(Submission.id == submission_id).first()
 
     def get_by_user_id(
         self, user_id: uuid.UUID, skip: int = 0, limit: int = 100
-    ) -> List[Submission]:
+    ) -> list[Submission]:
         """Retrieves all submissions made by a specific user ordered by submission time."""
         return (
             self.db.query(Submission)
@@ -46,7 +47,7 @@ class SubmissionRepo:
 
     def get_by_test_id(
         self, test_id: uuid.UUID, skip: int = 0, limit: int = 100
-    ) -> List[Submission]:
+    ) -> list[Submission]:
         """Retrieves all submissions associated with a specific test."""
         return (
             self.db.query(Submission)
@@ -68,4 +69,4 @@ class SubmissionRepo:
             return True
         except SQLAlchemyError as e:
             self.db.rollback()
-            raise DatabaseValidationError(message=f"Failed to delete submission: {str(e)}")
+            raise DatabaseValidationError(message=f"Failed to delete submission: {e!s}")

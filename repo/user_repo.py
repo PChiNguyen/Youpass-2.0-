@@ -1,11 +1,12 @@
 # repo/user_repo.py
 import uuid
-from typing import Optional, List
-from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from typing import List
 
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.orm import Session
+
+from core.exceptions import ConflictError, DatabaseValidationError, ResourceNotFoundError
 from db.models.user import User
-from core.exceptions import DatabaseValidationError, ConflictError, ResourceNotFoundError
 
 
 class UserRepo:
@@ -25,13 +26,13 @@ class UserRepo:
             raise ConflictError(message="A user with this email already exists.")
         except SQLAlchemyError as e:
             self.db.rollback()
-            raise DatabaseValidationError(message=f"Failed to create user: {str(e)}")
+            raise DatabaseValidationError(message=f"Failed to create user: {e!s}")
 
-    def get_by_id(self, user_id: uuid.UUID) -> Optional[User]:
+    def get_by_id(self, user_id: uuid.UUID) -> User | None:
         """Retrieves a single user by primary key."""
         return self.db.query(User).filter(User.id == user_id).first()
 
-    def get_by_email(self, email: str) -> Optional[User]:
+    def get_by_email(self, email: str) -> User | None:
         """Retrieves a single user by email address."""
         return self.db.query(User).filter(User.email == email).first()
 
@@ -54,7 +55,7 @@ class UserRepo:
             raise ConflictError(message="Email address is already in use by another account.")
         except SQLAlchemyError as e:
             self.db.rollback()
-            raise DatabaseValidationError(message=f"Failed to update user: {str(e)}")
+            raise DatabaseValidationError(message=f"Failed to update user: {e!s}")
 
     def delete(self, user_id: uuid.UUID) -> bool:
         """Deletes a user record by ID."""
@@ -68,4 +69,4 @@ class UserRepo:
             return True
         except SQLAlchemyError as e:
             self.db.rollback()
-            raise DatabaseValidationError(message=f"Failed to delete user: {str(e)}")
+            raise DatabaseValidationError(message=f"Failed to delete user: {e!s}")

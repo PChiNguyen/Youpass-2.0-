@@ -1,15 +1,17 @@
 # repo/test_repo.py
 import uuid
-from typing import Optional, List
-from sqlalchemy.orm import Session
-from sqlalchemy.exc import SQLAlchemyError
+from typing import List
 
-from db.models.test import Test, SkillType
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
+
 from core.exceptions import DatabaseValidationError, ResourceNotFoundError
+from db.models.test import SkillType, Test
 
 
 class TestRepo:
     __test__ = False
+
     def __init__(self, db: Session):
         self.db = db
 
@@ -23,15 +25,15 @@ class TestRepo:
             return test
         except SQLAlchemyError as e:
             self.db.rollback()
-            raise DatabaseValidationError(message=f"Failed to create test: {str(e)}")
+            raise DatabaseValidationError(message=f"Failed to create test: {e!s}")
 
-    def get_by_id(self, test_id: uuid.UUID) -> Optional[Test]:
+    def get_by_id(self, test_id: uuid.UUID) -> Test | None:
         """Retrieves a single test by ID."""
         return self.db.query(Test).filter(Test.id == test_id).first()
 
     def get_all(
-        self, skill_type: Optional[SkillType] = None, skip: int = 0, limit: int = 100
-    ) -> List[Test]:
+        self, skill_type: SkillType | None = None, skip: int = 0, limit: int = 100
+    ) -> list[Test]:
         """Retrieves a paginated list of tests, optionally filtered by skill type."""
         query = self.db.query(Test)
         if skill_type:
@@ -54,7 +56,7 @@ class TestRepo:
             return test
         except SQLAlchemyError as e:
             self.db.rollback()
-            raise DatabaseValidationError(message=f"Failed to update test: {str(e)}")
+            raise DatabaseValidationError(message=f"Failed to update test: {e!s}")
 
     def delete(self, test_id: uuid.UUID) -> bool:
         """Deletes a test record."""
@@ -68,4 +70,4 @@ class TestRepo:
             return True
         except SQLAlchemyError as e:
             self.db.rollback()
-            raise DatabaseValidationError(message=f"Failed to delete test: {str(e)}")
+            raise DatabaseValidationError(message=f"Failed to delete test: {e!s}")

@@ -1,18 +1,16 @@
 # services/ai_service.py
 import os
+
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 
-from schemas.ai_schemas import AIExplanationSchema, PayloadDetail 
-
 from core.exceptions import ThirdPartyServiceError
-
+from schemas.ai_schemas import AIExplanationSchema
 
 
 class AIService:
-    FALLBACK_MODELS = ("gemini-3.5-flash-lite",'gemini-3.6-flash','gemini-3.7-flash',
-                       'gemini-3.8-flash')  
+    FALLBACK_MODELS = ("gemini-2.5-flash", "gemini-1.5-flash")
 
     def __init__(self):
         env_file = ".env.test" if os.getenv("TESTING") == "1" else ".env"
@@ -32,7 +30,7 @@ class AIService:
             "and provide clear, simple, actionable feedback with code examples."
         )
 
-        last_exception = None
+        last_exception: Exception | None = None
         for model_name in self.FALLBACK_MODELS:
             try:
                 response = self.client.models.generate_content(
@@ -48,6 +46,11 @@ class AIService:
             except Exception as e:
                 last_exception = e
 
+        if last_exception is None:
+            raise ThirdPartyServiceError(
+                message="Failed to reach AI service across fallback models: no model response was produced."
+            )
+
         raise ThirdPartyServiceError(
-            message=f"Failed to reach AI service across fallback models: {str(last_exception)}"
+            message=f"Failed to reach AI service across fallback models: {last_exception!s}"
         )
