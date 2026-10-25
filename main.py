@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timezone
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pytest_cov import engine
+from db.session import engine
 from api import auth, submission_api, test_api   
 from core.exception_handlers import register_exception_handlers
 from db.base import Base 
