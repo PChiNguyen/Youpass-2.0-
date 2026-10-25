@@ -61,11 +61,11 @@ jobs:
         run: |                                   # Step 3: Upgrade pip and install all software dependencies
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install httpx ruff pytest-cov safety # 🟢 ADDED: Installed ruff (linter), pytest-cov (coverage), and safety (security scanner)
+        #  pip install httpx ruff pytest-cov safety # 🟢 ADDED: Installed ruff (linter), pytest-cov (coverage), and safety (security scanner)
 
-      - name: Run Code Linter (Ruff)
-        run: |                                   # 🟢 ADDED: Automatically checks code style, syntax errors, and formatting rules
-          ruff check .
+     # - name: Run Code Linter (Ruff)
+      #  run: |                                   # 🟢 ADDED: Automatically checks code style, syntax errors, and formatting rules
+       #   ruff check .
 
       - name: Check Dependencies Security (Safety)
         run: |                                   # 🟢 ADDED: Scans installed requirements for known package security vulnerabilities

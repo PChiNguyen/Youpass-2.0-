@@ -2,8 +2,10 @@ import logging
 from datetime import datetime, timezone
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from pytest_cov import engine
 from api import auth, submission_api, test_api   
-from core.exception_handlers import register_exception_handlers 
+from core.exception_handlers import register_exception_handlers
+from db.base import Base 
 
 # 1. LOGGING CONFIGURATION
 logging.basicConfig(
@@ -11,7 +13,7 @@ logging.basicConfig(
     format="%(asctime)s - [%(levelname)s] - %(message)s"
 )
 logger = logging.getLogger("uvicorn.error")
-
+Base.metadata.create_all(bind=engine)
 # 2. FASTAPI APPLICATION INITIALIZATION
 app = FastAPI(
     title="YouPass 2.0 API",
