@@ -6,7 +6,7 @@ name: CI Pipeline
 # -----------------------------------------------------------------------------
 on:
   push:  
-    branches: ["**"]         # Run moi moi moi automatically when code is pushed to these branches
+    branches: ["**"]         # Run automatically when code is pushed to these branches
   pull_request:
     branches: [ "main" ]         # Run automatically when a Pull Request is opened against them
 
@@ -61,15 +61,22 @@ jobs:
         run: |                                   # Step 3: Upgrade pip and install all software dependencies
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install httpx                      # CRITICAL FIX: Explicitly install httpx needed by Starlette TestClient!
+          pip install httpx ruff pytest-cov safety # 🟢 ADDED: Installed ruff (linter), pytest-cov (coverage), and safety (security scanner)
 
-      # You can safely REMOVE the "Set Database Environment Variables" step 
-      # and replace your "Run Tests" step with this clean layout:
-      - name: Run Tests
+      - name: Run Code Linter (Ruff)
+        run: |                                   # 🟢 ADDED: Automatically checks code style, syntax errors, and formatting rules
+          ruff check .
+
+      - name: Check Dependencies Security (Safety)
+        run: |                                   # 🟢 ADDED: Scans installed requirements for known package security vulnerabilities
+          safety check -r requirements.txt
+
+      - name: Run Tests with Coverage
         env:
-          TESTING: "True" # Forces Pydantic to apply testing logic
-          # Directly inject the database URL into the test step environment!
+          TESTING: "True"                        # Forces Pydantic to apply testing logic
           SQLALCHEMY_DATABASE_URL: postgresql://test_user:test_pass@localhost:5432/test_db
-        run: pytest -v
+        run: |                                   # 🟢 UPDATED: Run pytest with test coverage tracking and missing line reporting
+          pytest -v --cov=app --cov-report=term-missing
+
       - name: Docker Build Check
-        run: docker build -t student-system-api . # Step 5: Sanity check ensuring your local Dockerfile parses and builds flawlessly
+        run: docker build -t student-system-api . # Step 7: Sanity check ensuring your local Dockerfile parses and builds flawlessly

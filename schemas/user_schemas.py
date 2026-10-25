@@ -15,13 +15,14 @@ class UserBase(BaseModel):
     target_speaking: Optional[float] = None
     exam_date: Optional[date] = None
 
-# 🟢 Make password optional to allow social logins (Google)
+# 🟢 1. Schema for standard registration (Password is REQUIRED)
+class UserRegister(UserBase):
+    password: str
+
+# 🟢 2. Schema for internal/OAuth user creation (Password remains optional)
 class UserCreate(UserBase):
     password: Optional[str] = None
 
-class UserLogin(BaseModel):
-    email: EmailStr
-    password: str
 
 class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None

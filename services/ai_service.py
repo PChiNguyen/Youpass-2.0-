@@ -11,7 +11,8 @@ from core.exceptions import ThirdPartyServiceError
 
 
 class AIService:
-    FALLBACK_MODELS = ("gemini-2.5-flash", "gemini-1.5-flash")
+    FALLBACK_MODELS = ("gemini-3.5-flash-lite",'gemini-3.6-flash','gemini-3.7-flash',
+                       'gemini-3.8-flash')  
 
     def __init__(self):
         env_file = ".env.test" if os.getenv("TESTING") == "1" else ".env"

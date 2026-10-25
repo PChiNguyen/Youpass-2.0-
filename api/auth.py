@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from db.session import get_db
 from core import security
 from core.config import settings
-from schemas.user_schemas import UserCreate, UserResponse
+from schemas.user_schemas import UserRegister, UserResponse  # 🟢 Updated: Use UserRegister schema
 from schemas.auth_schemas import GoogleLoginRequest
 from services.user_service import UserService
 from api.deps import get_current_user
@@ -18,17 +18,13 @@ router = APIRouter()
 
 # USER REGISTRATION ENDPOINT
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-def register_user(user_in: UserCreate, db: Session = Depends(get_db)):
+def register_user(user_in: UserRegister, db: Session = Depends(get_db)):
     """
     Registers a new user account, handles password hashing, 
-    and checks for email conflicts via UserService.
+    and checks for email conflicts via UserService. Requires a password.
     """
     service = UserService(db)
     return service.create_user(user_in)
-
-
-
-
 
 
 # LOGIN AND GOOGLE LOGIN ENDPOINTS 
@@ -44,7 +40,6 @@ def login(
     """
     service = UserService(db)
     
-    # Retrieve user via repository/service layer instead of direct db query in router
     user = service.user_repo.get_by_email(form_data.username)
     if not user or not user.password or not security.verify_password(form_data.password, user.password):
         raise HTTPException(
@@ -54,25 +49,23 @@ def login(
         
     access_token = security.create_access_token(subject=user.id)
     
-    # Set token inside an HttpOnly cookie so JavaScript cannot steal it (XSS protection)
     response.set_cookie(
         key="access_token",
         value=f"Bearer {access_token}",
-        httponly=True,  # Prevents frontend JS from reading the cookie
-        samesite="lax",  # Protects against CSRF attacks
-        secure=False,   # Set to True in production with HTTPS
+        httponly=True,
+        samesite="lax",
+        secure=False,
     )
     
     return {"message": "Login successful", "access_token": access_token}
 
-# api/auth.py (Google Login Endpoint)
+
 @router.post("/google-login")
 def google_login(payload: GoogleLoginRequest, response: Response, db: Session = Depends(get_db)):
     """
     Verifies Google ID token and delegates user upsert logic entirely to UserService.
     """
     try:
-        # 1. Verify Google ID token
         google_url = f"https://oauth2.googleapis.com/tokeninfo?id_token={payload.token}"
         with httpx.Client() as client:
             google_res = client.get(google_url)
@@ -94,7 +87,6 @@ def google_login(payload: GoogleLoginRequest, response: Response, db: Session = 
                 detail="Google account does not provide an email."
             )
 
-        # 2. Delegate strictly to Service Layer (No direct repository calls in router!)
         service = UserService(db)
         user = service.get_or_create_google_user(
             email=email, 
@@ -102,7 +94,6 @@ def google_login(payload: GoogleLoginRequest, response: Response, db: Session = 
             avatar_url=avatar_url
         )
 
-        # 3. Generate JWT access token & set secure cookie
         access_token = security.create_access_token(subject=user.id)
 
         response.set_cookie(
@@ -112,7 +103,6 @@ def google_login(payload: GoogleLoginRequest, response: Response, db: Session = 
             samesite="lax",
             secure=False,
         )
-        # remember to fix the secure flag to True in production with HTTPS 
 
         return {"message": "Google login successful", "access_token": access_token}
 
@@ -123,13 +113,8 @@ def google_login(payload: GoogleLoginRequest, response: Response, db: Session = 
         )
 
 
-
-
-
-
 # GET CURRENT USER ENDPOINT
 @router.get("/me", response_model=UserResponse)
 def read_users_me(current_user: User = Depends(get_current_user)):
     """Returns the profile of the currently authenticated user."""
     return current_user
-

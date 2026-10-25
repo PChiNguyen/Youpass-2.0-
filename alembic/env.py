@@ -31,9 +31,9 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 from db.base import Base
-from db.models import user
-from db.models import submission 
-from db.models import test  # Import the Base class from your models module   
+from db.models.user import User
+from db.models.submission import Submission
+from db.models.test import Test  # Import the Base class from your models module   
 target_metadata = Base.metadata  # Assuming Base is imported from your models module 
 
 # other values from the config, defined by the needs of env.py,

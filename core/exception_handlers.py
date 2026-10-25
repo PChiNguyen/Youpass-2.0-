@@ -19,6 +19,7 @@ def _get_ai_suggestion(request: Request, exc: AppException) -> str:
         ai_service = AIService()
         context = f"Route: {request.url.path} | Message: {exc.message} | Payload: {exc.payload}"
         analysis = ai_service.generate_smart_error_payload(context)
+    
         return analysis.suggested_fix
     except Exception as e:
         logger.warning(f"AI exception diagnostic skipped: {str(e)}")

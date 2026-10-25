@@ -1,8 +1,26 @@
+# tests/test_auth.py
+
 import pytest
 from db.models.user import User
 from fastapi.testclient import TestClient
 from unittest.mock import patch
-from fastapi.testclient import TestClient  
+
+
+def test_register_success(client: TestClient):
+    """Tests successful user registration using the new UserRegister schema with a required password."""
+    response = client.post(
+        "/api/auth/register",
+        json={
+            "email": "newuser@example.com",
+            "password": "securepassword123",
+            "full_name": "New Student"
+        }
+    )
+    assert response.status_code == 201
+    data = response.json()
+    assert data["email"] == "newuser@example.com"
+    assert data["full_name"] == "New Student"
+    assert "id" in data
 
 
 def test_login_success(client: TestClient, mock_user: User):
@@ -52,7 +70,6 @@ def test_get_current_user_unauthorized(client: TestClient):
     assert response.status_code == 401
 
 
-
 @patch("httpx.Client.get")
 def test_google_login_success(mock_get, client: TestClient):
     """Tests Google login by mocking Google's token verification response."""
@@ -67,7 +84,7 @@ def test_google_login_success(mock_get, client: TestClient):
     # 2. Send request to your FastAPI backend
     response = client.post(
         "/api/auth/google-login",
-        json={"token": "fuck you"}
+        json={"token": "mock_google_id_token"}
     )
 
     # 3. Assert success

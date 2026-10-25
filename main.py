@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timezone
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api import auth, test, submission   
+from api import auth, submission_api, test_api   
 from core.exception_handlers import register_exception_handlers 
 
 # 1. LOGGING CONFIGURATION
@@ -34,8 +34,8 @@ app.add_middleware(
 )
 register_exception_handlers(app)     
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
-app.include_router(test.router, prefix="/api/tests", tags=["Tests"])
-app.include_router(submission.router, prefix="/api/submissions", tags=["Submissions"])
+app.include_router(test_api.router, prefix="/api/tests", tags=["Tests"])
+app.include_router(submission_api.router, prefix="/api/submissions", tags=["Submissions"])
 
 # 4. BASIC HEALTH CHECK ENDPOINTS
 @app.get("/", tags=["Health Check"])
