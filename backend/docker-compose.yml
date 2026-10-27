@@ -1,0 +1,56 @@
+
+
+services:
+  # 1. FastAPI Web API Service
+  api:
+    build: .
+    container_name: ielts_api
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DATABASE_URL=postgresql://postgres:root@db:5432/ielts_db
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # 2. PostgreSQL Database Service
+  db:
+    image: postgres:15-alpine
+    container_name: ielts_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: ielts_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ielts_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 3. Database Management GUI (pgAdmin)
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: ielts_pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
+volumes:
+  postgres_data:
+  pgadmin_data:
