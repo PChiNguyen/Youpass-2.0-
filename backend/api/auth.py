@@ -13,6 +13,7 @@ from schemas.auth_schemas import GoogleLoginRequest
 from services.user_service import UserService
 from api.deps import get_current_user
 from db.models.user import User
+from schemas.auth_schemas import LoginRequest
 
 router = APIRouter()
 
@@ -32,7 +33,7 @@ def register_user(user_in: UserRegister, db: Session = Depends(get_db)):
 def login(
     response: Response,
     db: Session = Depends(get_db),
-    form_data: OAuth2PasswordRequestForm = Depends()
+    form_data: LoginRequest = Depends(),
 ):
     """
     Authenticates user credentials against hashed passwords via UserService,
@@ -40,7 +41,7 @@ def login(
     """
     service = UserService(db)
     
-    user = service.user_repo.get_by_email(form_data.username)
+    user = service.user_repo.get_by_email(form_data.email)
     if not user or not user.password or not security.verify_password(form_data.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

@@ -9,6 +9,12 @@ class Token(BaseModel):
 class TokenPayload(BaseModel):
     sub: Optional[str] = None
 
+from pydantic import BaseModel, EmailStr
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
 # 🟢 Add this schema for Google Login request payload
 class GoogleLoginRequest(BaseModel):
     token: str  # The Google ID token (credential) received from frontend

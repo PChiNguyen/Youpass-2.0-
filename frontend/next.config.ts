@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
+const nextConfig: NextConfig = {allowedDevOrigins: ['172.16.0.2', 'localhost:3000'],
   /* config options here */
   experimental: {
     agentFeedback: true,
