@@ -26,7 +26,8 @@ app = FastAPI(
 
 # 3. CORS CONFIGURATION
 ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React / Next.js local dev
+    "http://localhost:3000",
+    "http://172.16.0.2:3000",  # React / Next.js local dev
     "http://localhost:5173",  # Vite local dev
 ]
 
