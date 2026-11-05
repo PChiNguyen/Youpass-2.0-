@@ -30,10 +30,9 @@ def register_user(user_in: UserRegister, db: Session = Depends(get_db)):
 
 # LOGIN AND GOOGLE LOGIN ENDPOINTS 
 @router.post("/login")
-def login(
+def login(form_data: LoginRequest,
     response: Response,
-    db: Session = Depends(get_db),
-    form_data: LoginRequest = Depends(),
+    db: Session = Depends(get_db) 
 ):
     """
     Authenticates user credentials against hashed passwords via UserService,
