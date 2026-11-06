@@ -43,8 +43,7 @@ def login(form_data: LoginRequest,
     user = service.user_repo.get_by_email(form_data.email)
     if not user or not user.password or not security.verify_password(form_data.password, user.password):
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
+            status_code=status.HTTP_401_UNAUTHORIZED
         )
         
     access_token = security.create_access_token(subject=user.id)
