@@ -1,127 +1,85 @@
 'use client';
 
-import { useState } from 'react';
-import { LogIn, Lock, Mail, Eye, EyeOff } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { BookOpen, ArrowRight, ShieldCheck, Award, LayoutDashboard } from 'lucide-react';
 import { useAuthStore } from './store/useAuthStore';
-import { useRouter } from 'next/navigation';
 
-export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false); // State for password visibility
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  
-  const setToken = useAuthStore((state) => state.setToken);
-  const router = useRouter();
+export default function HomePage() {
+  const token = useAuthStore((state) => state.token);
+  const [mounted, setMounted] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://youpass-2-0.onrender.com';
-      
-      // 🟢 FIXED: Using backticks (``) so the variable interpolates correctly!
-      const response = await fetch(`${apiUrl}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        // Try to grab specific error message from FastAPI if available
-        const errData = await response.json().catch(() => null);
-        throw new Error(errData?.detail || 'Invalid email or password. Please check your credentials.');
-      }
-
-      const data = await response.json();
-      setToken(data.access_token);
-      router.push('/dashboard');
-    } catch (err: any) {
-      setError(err.message || 'An error occurred during login. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 space-y-6 border border-gray-100">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col justify-between">
+      
+      {/* Hero Section */}
+      <main className="max-w-4xl mx-auto px-6 py-16 text-center space-y-8">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 text-blue-700 rounded-full text-xs font-bold uppercase tracking-wider">
+          <Award className="w-4 h-4" /> Learn smarter not harder 
+        </div>
         
-        {/* Header */}
-        <div className="text-center space-y-1">
-          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">YouPass 2.0</h1>
-          <p className="text-sm text-gray-500">Sign in to access your IELTS practice tests</p>
+        <h1 className="text-5xl md:text-6xl font-black text-gray-900 tracking-tight leading-tight">
+          Master IELTS with <span className="text-blue-600">Smart Practice</span> & Real Analytics
+        </h1>
+        
+        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          Access curated Reading, Listening, Writing, and Speaking practice tests tailored to your target score. Track your progress and achieve your goals faster.
+        </p>
+
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+          {mounted && token ? (
+            <Link
+              href="/dashboard"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all text-base"
+            >
+              <LayoutDashboard className="w-5 h-5" /> Go to Dashboard <ArrowRight className="w-5 h-5" />
+            </Link>
+          ) : (
+            <Link
+              href="/login"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all text-base"
+            >
+              Sign In to Practice <ArrowRight className="w-5 h-5" />
+            </Link>
+          )}
+          <Link
+            href="/dashboard"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-gray-800 font-semibold px-8 py-3.5 rounded-xl border border-gray-300 shadow-sm transition-all text-base"
+          >
+            View Dashboard Preview
+          </Link>
         </div>
 
-        {/* Error Notification Box */}
-        {error && (
-          <div className="p-3.5 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm font-medium text-center animate-shake">
-            {error}
+        {/* Feature Highlights */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-16 text-left">
+          <div className="p-6 bg-white rounded-2xl border border-gray-100 shadow-sm space-y-2">
+            <BookOpen className="w-8 h-8 text-blue-600" />
+            <h3 className="font-bold text-gray-900">4 Skills Hub</h3>
+            <p className="text-sm text-gray-500">Comprehensive practice modules for Reading, Listening, Writing, and Speaking.</p>
           </div>
-        )}
-
-        {/* Login Form */}
-        <form onSubmit={handleLogin} className="space-y-4">
-          
-          {/* Email Field */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1.5">
-              Email Address
-            </label>
-            <div className="relative">
-              <Mail className="absolute left-3.5 top-3 h-5 w-5 text-gray-400" />
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-11 pr-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
-                placeholder="you@example.com"
-              />
-            </div>
+          <div className="p-6 bg-white rounded-2xl border border-gray-100 shadow-sm space-y-2">
+            <ShieldCheck className="w-8 h-8 text-blue-600" />
+            <h3 className="font-bold text-gray-900">Secure & Reliable</h3>
+            <p className="text-sm text-gray-500">Protected JWT authentication backed by robust PostgreSQL storage.</p>
           </div>
-
-          {/* Password Field with Eye Toggle */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1.5">
-              Password
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3.5 top-3 h-5 w-5 text-gray-400" />
-              <input
-                type={showPassword ? 'text' : 'password'} // Dynamic toggle between text and password
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-11 pr-12 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
-                placeholder="••••••••"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-3 text-gray-400 hover:text-gray-600 focus:outline-none transition-colors"
-                title={showPassword ? "Hide password" : "Show password"}
-              >
-                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-              </button>
-            </div>
+          <div className="p-6 bg-white rounded-2xl border border-gray-100 shadow-sm space-y-2">
+            <Award className="w-8 h-8 text-blue-600" />
+            <h3 className="font-bold text-gray-900">Personalized Study</h3>
+            <p className="text-sm text-gray-500">Track your overall scores and daily study habits with automated heatmaps.</p>
           </div>
+        </div>
+      </main>
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl shadow-md hover:shadow-lg transition-all disabled:opacity-50 mt-2"
-          >
-            <LogIn className="w-5 h-5" />
-            {loading ? 'Verifying credentials...' : 'Sign In'}
-          </button>
-        </form>
+      {/* Footer */}
+      <footer className="max-w-7xl mx-auto w-full px-6 py-8 text-center text-xs text-gray-400 border-t border-gray-100">
+        © 2026 YouPass 2.0. All rights reserved.
+      </footer>
 
-      </div>
     </div>
   );
 }
