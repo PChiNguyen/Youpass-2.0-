@@ -1,23 +1,20 @@
-# api/auth.py
+# backend/api/auth.py
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, status, Response
-from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from db.session import get_db
 from core import security
-from core.config import settings
-from schemas.user_schemas import UserRegister, UserResponse  # 🟢 Updated: Use UserRegister schema
-from schemas.auth_schemas import GoogleLoginRequest
+from schemas.user_schemas import UserRegister, UserResponse, UserUpdate
+from schemas.auth_schemas import GoogleLoginRequest, LoginRequest
 from services.user_service import UserService
 from api.deps import get_current_user
 from db.models.user import User
-from schemas.auth_schemas import LoginRequest
 
 router = APIRouter()
 
-# USER REGISTRATION ENDPOINT
+# 1. USER REGISTRATION ENDPOINT
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register_user(user_in: UserRegister, db: Session = Depends(get_db)):
     """
@@ -28,9 +25,10 @@ def register_user(user_in: UserRegister, db: Session = Depends(get_db)):
     return service.create_user(user_in)
 
 
-# LOGIN AND GOOGLE LOGIN ENDPOINTS 
+# 2. LOGIN WITH EMAIL & PASSWORD
 @router.post("/login")
-def login(form_data: LoginRequest,
+def login(
+    form_data: LoginRequest,
     response: Response,
     db: Session = Depends(get_db) 
 ):
@@ -44,7 +42,7 @@ def login(form_data: LoginRequest,
     if not user or not user.password or not security.verify_password(form_data.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password skioruwuqrpuerueewrouqweurpoejdfjjk éouroiuc cewoopiewuooew ",
+            detail="Incorrect email or password",
         )
         
     access_token = security.create_access_token(subject=user.id)
@@ -60,6 +58,7 @@ def login(form_data: LoginRequest,
     return {"message": "Login successful", "access_token": access_token}
 
 
+# 3. GOOGLE OAUTH LOGIN
 @router.post("/google-login")
 def google_login(payload: GoogleLoginRequest, response: Response, db: Session = Depends(get_db)):
     """
@@ -113,8 +112,24 @@ def google_login(payload: GoogleLoginRequest, response: Response, db: Session = 
         )
 
 
-# GET CURRENT USER ENDPOINT
+# 4. GET CURRENT USER PROFILE
 @router.get("/me", response_model=UserResponse)
 def read_users_me(current_user: User = Depends(get_current_user)):
     """Returns the profile of the currently authenticated user."""
     return current_user
+
+
+# 5. PARTIALLY UPDATE CURRENT USER PROFILE (GOALS, EXAM DATE, ETC.)
+@router.patch("/me", response_model=UserResponse)
+def update_users_me(
+    user_in: UserUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Allows the authenticated user to update their target scores,
+    exam date, full name, or avatar URL.
+    """
+    service = UserService(db)
+    updated_user = service.update_user(user_id=current_user.id, user_info=user_in)
+    return updated_user
