@@ -1,82 +1,131 @@
-test:
-	pytest -s
-test-repo:
-	pytest -s tests/test_repo 
-test-services:
-	pytest -s tests/test_services
-test-db:
-	pytest -s tests/test_db
-test-schemas:
-	pytest -s tests/test_schemas
-test-core: 
-	pytest -s tests/test_core
-test-api:
-	pytest -s tests/test_api
+.PHONY: help \
+	run req \
+	test test-repo test-services test-db test-schemas test-core test-api watch \
+	lint format-check typecheck verify \
+	migrate check-model create-user create-skill \
+	up start-redis down build build-api check-docker check-logs logs-api logs-worker-docker \
+	celery-worker celery-worker-docker create-user-docker create-skill-docker
 
+help:
+	@echo "Available targets:"
+	@echo "  Dev & Local : run, req"
+	@echo "  Quality/Test: verify, lint, format-check, typecheck, test, watch"
+	@echo "  DB & Scripts: migrate, check-model, create-user, create-skill"
+	@echo "  Docker      : up, start-redis, down, build, build-api, check-docker, check-logs, logs-api, logs-worker-docker"
+	@echo "  Workers     : celery-worker, celery-worker-docker, create-user-docker, create-skill-docker"
 
-
-watch:
-	python -m pytest_watch -- --cov=. --cov-report=term-missing --cov-report=xml 
-
+# ==============================================================================
+# 1. Local Dev & Dependencies
+# ==============================================================================
 run:
-	python -m uvicorn main:app --reload 
-create-user:
-	python create_user.py  
-create-skill:
-	python create_skill.py
-check-model:
-	python check_models.py
-
-
-
-
-up:
-	docker-compose up -d
-start-redis:
-	docker compose up -d redis
-
-# 2. Stop the project
-# What it does: Safely shuts down all containers.
-# When to use: When you are done working.
-down:
-	docker-compose down
-
-# 3. Rebuild the project
-# What it does: Re-installs everything from scratch. 
-# When to use: Use this ONLY when you add new things to requirements.txt or change the Dockerfile.
-build:
-	docker-compose up -d --build
-build-api:
-	docker compose up -d --build api
-
-# 4. Build/Update the Database Tables
-# What it does: Runs Alembic to create your tables in Postgres.
-# When to use: After you create or change a class in models.py.
-migrate:
-	docker-compose exec api alembic upgrade head
+	python -m uvicorn main:app --reload
 
 req:
 	pip freeze > requirements.txt
 
-create-user-docker:
-	docker exec -it ielts_api python create_user.py
-create-skill-docker:
-	docker exec -it ielts_api python create_skill.py  
-celery-worker-docker:
-	docker exec -it ielts_api celery -A core.celery_app worker --pool=gevent --loglevel=info
+# ==============================================================================
+# 2. Quality Gates & Testing
+# ==============================================================================
+verify:
+	ruff check .
+	mypy api core db repo schemas services workers main.py
+	pytest -q
+
+lint:
+	ruff check .
+
+format-check:
+	ruff format --check .
+
+typecheck:
+	mypy api core db repo schemas services workers main.py
+
+test:
+	pytest -s
+
+test-repo:
+	pytest -s tests/test_repo
+
+test-services:
+	pytest -s tests/test_services
+
+test-db:
+	pytest -s tests/test_db
+
+test-schemas:
+	pytest -s tests/test_schemas
+
+test-core:
+	pytest -s tests/test_core
+
+test-api:
+	pytest -s tests/test_api
+
+watch:
+	python -m pytest_watch -- --cov=. --cov-report=term-missing --cov-report=xml
+
+# ==============================================================================
+# 3. Database & Helper Scripts (Local)
+# ==============================================================================
+# Runs Alembic to update database tables after model changes.
+migrate:
+	docker-compose exec api alembic upgrade head
+
+check-model:
+	python check_models.py
+
+create-user:
+	python create_user.py
+
+create-skill:
+	python create_skill.py
+
+# ==============================================================================
+# 4. Docker & Background Workers
+# ==============================================================================
+up:
+	docker-compose up -d
+
+start-redis:
+	docker compose up -d redis
+
+# Safely shuts down all containers when done working.
+down:
+	docker-compose down
+
+# Rebuilds images; use when requirements.txt or Dockerfile changes.
+build:
+	docker-compose up -d --build
+
+build-api:
+	docker compose up -d --build api
 
 check-docker:
-	docker ps -a 
+	docker ps -a
 
 check-logs:
-	docker logs ielts_api  
-
+	docker logs ielts_api
 
 logs-api:
-	docker-compose logs -f api    
+	docker-compose logs -f api
+
+logs-worker-docker:
+	docker compose logs -f worker
 
 celery-worker:
 	celery -A core.celery_app worker --pool=gevent --loglevel=info
 
-logs-workerdocker: 
-	docker compose logs -f worker  
+celery-worker-docker:
+	docker exec -it ielts_api celery -A core.celery_app worker --pool=gevent --loglevel=info
+
+create-user-docker:
+	docker exec -it ielts_api python create_user.py
+
+create-skill-docker:
+	docker exec -it ielts_api python create_skill.py
+```[cite: 8]
+
+### Lưu ý nhỏ khi dùng trên Windows / VS Code
+* **Ký tự Tab:** File `Makefile` bắt buộc thụt đầu dòng bằng **Tab** (`\t`), không dùng dấu cách (`space`), nếu không `make` sẽ báo lỗi syntax.
+* **Tên target `logs-workerdocker`:** Mình chuẩn hóa thành `logs-worker-docker` cho đồng bộ với `create-user-docker` và `create-skill-docker` (nếu bạn quen gõ `logs-workerdocker` cũ thì có thể đổi lại tên đó cho khỏi lệch thói quen)[cite: 8].
+* **Lệnh `make` trên Windows:** Nếu máy bạn chưa cài GNU `make`, bạn có thể chạy trực tiếp từng lệnh bên trong hoặc chạy qua WSL/Git Bash.

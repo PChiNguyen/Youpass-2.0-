@@ -22,16 +22,20 @@ class SubmissionService:
         if not test:
             raise ResourceNotFoundError(message=f"Test with ID '{submission_info.test_id}' not found.")
 
-        questions = test.content.get("questions", [])
+        questions = test.content.get("questions", []) if isinstance(test.content, dict) else []
         raw_score = GradingService.calculate_raw_score(questions, submission_info.user_answers)
-        achieved_band = GradingService.convert_raw_to_band(raw_score, test.skill_type)
+        achieved_band = GradingService.convert_raw_to_band(
+            raw_score,
+            test.skill_type,
+            total_questions=len(questions) or 40,
+        )
 
         submission_data = {
             "user_id": user_id,
             "test_id": submission_info.test_id,
             "user_answers": submission_info.user_answers,
             "raw_score": raw_score,
-            "achieved_band": achieved_band
+            "achieved_band": achieved_band,
         }
 
         return self.submission_repo.create(**submission_data)
