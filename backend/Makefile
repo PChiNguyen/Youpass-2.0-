@@ -123,9 +123,4 @@ create-user-docker:
 
 create-skill-docker:
 	docker exec -it ielts_api python create_skill.py
-```[cite: 8]
 
-### Lưu ý nhỏ khi dùng trên Windows / VS Code
-* **Ký tự Tab:** File `Makefile` bắt buộc thụt đầu dòng bằng **Tab** (`\t`), không dùng dấu cách (`space`), nếu không `make` sẽ báo lỗi syntax.
-* **Tên target `logs-workerdocker`:** Mình chuẩn hóa thành `logs-worker-docker` cho đồng bộ với `create-user-docker` và `create-skill-docker` (nếu bạn quen gõ `logs-workerdocker` cũ thì có thể đổi lại tên đó cho khỏi lệch thói quen)[cite: 8].
-* **Lệnh `make` trên Windows:** Nếu máy bạn chưa cài GNU `make`, bạn có thể chạy trực tiếp từng lệnh bên trong hoặc chạy qua WSL/Git Bash.

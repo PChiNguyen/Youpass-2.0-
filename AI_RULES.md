@@ -49,3 +49,10 @@ Whenever an AI edit causes a repeated bug or drift, do NOT just fix it verbally:
 1. **Catch:** Identify the exact failure mode (e.g., `usePathname()` breaking build, `any` cast, wrong endpoint payload).
 2. **Automate first:** Add an ESLint rule (`frontend/eslint.config.mjs`), Ruff/Mypy rule (`backend/pyproject.toml`), or regression test (`backend/tests/` or `frontend/e2e/`).
 3. **Document second:** Add a 1-line constraint in `AI_RULES.md` only if a static tool cannot enforce it.
+
+## 7. Systems Thinking & Flow Trace
+When implementing a feature, fixing a bug, or touching shared contracts:
+1. **Trace the Full Chain First (Before Editing):** List every layer and file involved across the flow (e.g., `UI/Component -> Hook/Store -> API client -> FastAPI router -> Service -> Repo/DB/Seed` and corresponding tests). Never patch just one file without checking downstream/upstream effects.
+2. **Check Contract & State Drift:** Verify that field names, types, enums, auth states (`token` / `401` / guest vs. logged-in), and user-facing copy/notes still match across backend schemas, frontend types, and UI components.
+3. **Name Assumptions & Trade-offs Explicitly:** When touching temporary MVP shortcuts or edge cases (e.g., `< 40` question drill band logic, `correct_answer` exposure, or unbuilt routes), state the trade-off in 1 line and keep related UI/tests in sync.
+4. **Verify Across Layers:** After editing, run the relevant static gates (`verify` / `typecheck` / `lint`) plus targeted unit/integration or flow tests—not just a single isolated check.
